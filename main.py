@@ -27,7 +27,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.start_ammo = ammo
         self.shoot_cooldown = 0
         self.shooting_speed = shooting_speed
-        self.reload_cooldown = 0
+        self.reload_time = 0
         self.health = health
         self.max_health = self.health
         self.direction = 1
@@ -80,9 +80,6 @@ class Cowboy(pygame.sprite.Sprite):
         
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
-
-        if self.reload_cooldown > 0:
-            self.reload_cooldown -= 1
 	
     def move(self, left, right):
         move_x, move_y = 0, 0
@@ -118,7 +115,7 @@ class Cowboy(pygame.sprite.Sprite):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = self.shooting_speed
             bullet = Bullet(
-                self.rect.centerx + (0 * self.rect.size[0] * self.direction),
+                self.rect.centerx,
                 self.rect.centery + 5,
                 self.direction,
             )
@@ -126,9 +123,11 @@ class Cowboy(pygame.sprite.Sprite):
             self.ammo -= 1
     
     def reload(self):
-        if self.ammo < 6:
-            self.ammo = 6
-            self.reload_cooldown = 30 * (6 - self.ammo)
+        if pygame.time.get_ticks() - self.reload_time > 500:
+            self.ammo += 1
+            self.reload_time = pygame.time.get_ticks()
+        if self.ammo == 6:
+            self.reload_time = 0
 
         
 
@@ -208,7 +207,7 @@ class Bullet(pygame.sprite.Sprite):
 health_1 = HealthItem(100, 360)
 OBJECT_GROUP.add(health_1)
 
-player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 30)
+player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 25)
 enemy = Cowboy("Enemy", 500, 350, 1.5, 7, 6, 10, 50)
 ENEMY_GROUP.add(enemy)
 
@@ -237,6 +236,7 @@ while run:
         if shoot and not reload:
             player.shoot()
         if reload:
+            drawText('RELOADING', 600, 15)
             player.reload()
         if player.in_air:
             player.update_action(2)
@@ -246,7 +246,7 @@ while run:
             player.update_action(0)
         player.move(moving_left, moving_right)
 
-        if player.reload_cooldown == 0:
+        if player.reload_time == 0:
             reload = False
 
     enemy.update()
@@ -265,8 +265,9 @@ while run:
                 shoot = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
-            if event.key == pygame.K_k:
+            if event.key == pygame.K_k and player.reload_time == 0 and player.ammo < 6:
                 reload = True
+                player.reload_time = pygame.time.get_ticks()
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
