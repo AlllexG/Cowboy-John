@@ -19,6 +19,7 @@ RED = (255, 0, 0)
 moving_left = False
 moving_right = False
 shoot = False
+reload = False
 
 ANIMATION_COOLDOWN = 100
 
@@ -35,6 +36,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.ammo = ammo
         self.start_ammo = ammo
         self.shoot_cooldown = 0
+        self.reload_cooldown = 0
         self.health = 100
         self.max_health = self.health
         self.direction = 1
@@ -70,6 +72,9 @@ class Cowboy(pygame.sprite.Sprite):
         
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
+
+        if self.reload_cooldown > 0:
+            self.reload_cooldown -= 1
 	
     def move(self, left, right):
         move_x, move_y = 0, 0
@@ -111,6 +116,12 @@ class Cowboy(pygame.sprite.Sprite):
             )
             bullet_group.add(bullet)
             self.ammo -= 1
+    
+    def reload(self):
+        if self.ammo < 6:
+            self.reload_cooldown = 30 * (6 - self.ammo)
+            self.ammo = 6
+
         
 
     def update_animation(self):
@@ -177,6 +188,7 @@ enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
 
 run = True
 while run:
+    print(reload)
     clock.tick(FPS)
     screen.fill(BG)
     pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
@@ -188,8 +200,10 @@ while run:
     bullet_group.draw(screen)
 
     if player.alive:
-        if shoot:
+        if shoot and not reload:
             player.shoot()
+        if reload:
+            player.reload()
         if player.in_air:
             player.update_action(2)
         elif moving_left or moving_right:
@@ -197,6 +211,9 @@ while run:
         else:
             player.update_action(0)
         player.move(moving_left, moving_right)
+
+        if player.reload_cooldown == 0:
+            reload = False
 
     enemy.update()
     enemy.draw()
@@ -214,6 +231,8 @@ while run:
                 shoot = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
+            if event.key == pygame.K_k:
+                reload = True
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
