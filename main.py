@@ -48,7 +48,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.action = 0
 
         self.animation_list = []
-        self.animation_types = ["Idle", "Run", "Jump"]
+        self.animation_types = ["Idle", "Run", "Jump", "Death"]
         for animation in self.animation_types:
             temp_list = []
             num_of_frames = len(os.listdir(f"Images/{char_type}/{animation}"))
@@ -66,6 +66,7 @@ class Cowboy(pygame.sprite.Sprite):
         
     def update(self):
         self.update_animation()
+        self.check_alive()
         
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
@@ -102,9 +103,9 @@ class Cowboy(pygame.sprite.Sprite):
         
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
-            self.shoot_cooldown = 7
+            self.shoot_cooldown = 20
             bullet = Bullet(
-                self.rect.centerx + (0.4 * self.rect.size[0] * self.direction),
+                self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
                 self.rect.centery,
                 self.direction,
             )
@@ -128,6 +129,13 @@ class Cowboy(pygame.sprite.Sprite):
 
             self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
+    
+    def check_alive(self):
+        if self.health <= 0:
+            self.health = 0
+            self.speed = 0
+            self.alive = False
+            self.update_action(3)
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
@@ -162,7 +170,7 @@ class Bullet(pygame.sprite.Sprite):
 bullet_group = pygame.sprite.Group()
 
 player = Cowboy("Player", 200, 200, 1.5, 7, 6)
-enemy = Cowboy("Enemy", 400, 200, 1.5, 7, 6)
+enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
 
 run = True
 while run:
