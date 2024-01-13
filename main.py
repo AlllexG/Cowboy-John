@@ -15,6 +15,11 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Shooter")
 
 
+def drawText(text, x, y):
+    img = FONT.render(text, True, (0, 0, 0))
+    screen.blit(img, (x, y))
+
+
 class Cowboy(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed, ammo):
         pygame.sprite.Sprite.__init__(self)
@@ -143,6 +148,21 @@ class Cowboy(pygame.sprite.Sprite):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
+class HealthItem(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = HEART_IMAGE
+        self.rect = self.image.get_rect()
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+
+    def update(self):
+        if pygame.sprite.collide_rect(self, player):
+            player.health += 25
+            if player.health > player.max_health:
+                player.health = player.max_health
+            self.kill()
+
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
@@ -170,6 +190,10 @@ class Bullet(pygame.sprite.Sprite):
 
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
+object_group = pygame.sprite.Group()
+
+health_1 = HealthItem(100, 360)
+object_group.add(health_1)
 
 player = Cowboy("Player", 200, 200, 1.5, 7, 6)
 enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
@@ -181,17 +205,21 @@ while run:
     screen.fill(BG)
     pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
 
+    for x in range(player.ammo):
+        screen.blit(BULLET_COUNT_IMAGE, (5 + (x * 30), 40))
+
     player.update()
     player.draw()
 
-    font = pygame.font.Font('PixelForce.ttf', 32)
-    img = font.render(f'{player.ammo}', True, (0, 0, 0))
-    screen.blit(img, (0, 0))
-    img = font.render(f'{player.health}', True, (200, 0, 0))
-    screen.blit(img, (30, 0))
+    for enemy in enemy_group:
+        enemy.update()
+        enemy.draw()
 
     bullet_group.update()
     bullet_group.draw(screen)
+
+    object_group.update()
+    object_group.draw(screen)
 
     if player.alive:
         if shoot and not reload:
