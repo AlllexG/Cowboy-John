@@ -168,11 +168,12 @@ class Bullet(pygame.sprite.Sprite):
                 enemy.health -= 30
                 self.kill()
 
-
+enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 
 player = Cowboy("Player", 200, 200, 1.5, 7, 6)
 enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
+enemy_group.add(enemy)
 
 run = True
 while run:
