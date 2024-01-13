@@ -4,24 +4,21 @@ from variables import *
 
 pygame.init()
 
-clock = pygame.time.Clock()
-
 moving_left = False
 moving_right = False
 shoot = False
 reload = False
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Shooter")
 
 
 def drawText(text, x, y):
     img = FONT.render(text, True, (0, 0, 0))
-    screen.blit(img, (x, y))
+    SCREEN.blit(img, (x, y))
 
 
 class Cowboy(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo, health):
+    def __init__(self, char_type, x, y, scale, speed, ammo, health, shooting_speed):
         pygame.sprite.Sprite.__init__(self)
 
         self.alive = True
@@ -29,6 +26,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.ammo = ammo
         self.start_ammo = ammo
         self.shoot_cooldown = 0
+        self.shooting_speed = shooting_speed
         self.reload_cooldown = 0
         self.health = health
         self.max_health = self.health
@@ -65,15 +63,15 @@ class Cowboy(pygame.sprite.Sprite):
 
         for heart in range(int(self.max_health / 2)):
             if int(half_hearts_total) > heart:
-                screen.blit(FULL_HEART_IMAGE, (heart * 50  + 10, 10))
+                SCREEN.blit(FULL_HEART_IMAGE, (heart * 50  + 10, 10))
             elif half_heart_exists and int(half_hearts_total) == heart:
-                screen.blit(HALF_HEART_IMAGE, (heart * 50 + 10, 10))
+                SCREEN.blit(HALF_HEART_IMAGE, (heart * 50 + 10, 10))
             else:
-                screen.blit(EMPTY_HEART_IMAGE, (heart * 50 + 10, 10))
+                SCREEN.blit(EMPTY_HEART_IMAGE, (heart * 50 + 10, 10))
 
     def ammo_count(self):
         for x in range(player.ammo):
-            screen.blit(BULLET_COUNT_IMAGE, (5 + (x * 30), 40))
+            SCREEN.blit(BULLET_COUNT_IMAGE, (5 + (x * 30), 40))
     
         
     def update(self):
@@ -118,13 +116,13 @@ class Cowboy(pygame.sprite.Sprite):
         
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
-            self.shoot_cooldown = 30
+            self.shoot_cooldown = self.shooting_speed
             bullet = Bullet(
                 self.rect.centerx + (0 * self.rect.size[0] * self.direction),
                 self.rect.centery + 5,
                 self.direction,
             )
-            bullet_group.add(bullet)
+            BULLET_GROUP.add(bullet)
             self.ammo -= 1
     
     def reload(self):
@@ -162,7 +160,7 @@ class Cowboy(pygame.sprite.Sprite):
             self.update_action(3)
 
     def draw(self):
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        SCREEN.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
 class HealthItem(pygame.sprite.Sprite):
@@ -196,48 +194,44 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
             self.kill()
             
-        if pygame.sprite.spritecollide(player, bullet_group, False):
+        if pygame.sprite.spritecollide(player, BULLET_GROUP, False):
             if player.alive:
                 player.health -= 2
                 self.kill()
         
-        for enemy in enemy_group:
-            if pygame.sprite.spritecollide(enemy, bullet_group, False):
+        for enemy in ENEMY_GROUP:
+            if pygame.sprite.spritecollide(enemy, BULLET_GROUP, False):
                 if enemy.alive:
                     enemy.health -= 5
                     self.kill()
 
-enemy_group = pygame.sprite.Group()
-bullet_group = pygame.sprite.Group()
-object_group = pygame.sprite.Group()
-
 health_1 = HealthItem(100, 360)
-object_group.add(health_1)
+OBJECT_GROUP.add(health_1)
 
-player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10)
-enemy = Cowboy("Enemy", 500, 350, 1.5, 7, 6, 10)
-enemy_group.add(enemy)
+player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 30)
+enemy = Cowboy("Enemy", 500, 350, 1.5, 7, 6, 10, 50)
+ENEMY_GROUP.add(enemy)
 
 run = True
 while run:
-    clock.tick(FPS)
-    screen.fill(BG)
-    pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
+    CLOCK.tick(FPS)
+    SCREEN.fill(BG)
+    pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
 
     player.update()
     player.draw()
     player.health_bar()
     player.ammo_count()
 
-    for enemy in enemy_group:
+    for enemy in ENEMY_GROUP:
         enemy.update()
         enemy.draw()
 
-    bullet_group.update()
-    bullet_group.draw(screen)
+    BULLET_GROUP.update()
+    BULLET_GROUP.draw(SCREEN)
 
-    object_group.update()
-    object_group.draw(screen)
+    OBJECT_GROUP.update()
+    OBJECT_GROUP.draw(SCREEN)
 
     if player.alive:
         if shoot and not reload:

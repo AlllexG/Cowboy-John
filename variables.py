@@ -26,3 +26,10 @@ BG = (236, 217, 149)
 RED = (255, 0, 0)
 
 ANIMATION_COOLDOWN = 100
+
+ENEMY_GROUP = pygame.sprite.Group()
+BULLET_GROUP = pygame.sprite.Group()
+OBJECT_GROUP = pygame.sprite.Group()
+
+CLOCK = pygame.time.Clock()
+SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
