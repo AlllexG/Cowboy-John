@@ -11,6 +11,8 @@ FPS = 60
 
 GRAVITY = 0.75
 
+bullet_image = pygame.image.load('Images/Objects/bullet.png')
+
 BG = (236, 217, 149)
 RED = (255, 0, 0)
 
@@ -105,8 +107,20 @@ class Cowboy(pygame.sprite.Sprite):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = 10
+        self.image = bullet_image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.direction = direction
+        
+        
+bullet_group = pygame.sprite.Group()
+
 player = Cowboy('Player', 200, 200, 1.5, 7)
-# enemy = Cowboy('Enemy', 400, 200, 1.5, 7)
+enemy = Cowboy('Enemy', 400, 200, 1.5, 7)
 
 run = True
 while run:
@@ -116,6 +130,9 @@ while run:
 
     player.update_animation()
     player.draw()
+    
+    bullet_group.update()
+    bullet_group.draw(screen)
 
     if player.alive:
         if player.in_air:
@@ -126,8 +143,8 @@ while run:
             player.update_action(0)
         player.move(moving_left, moving_right)
 
-    # enemy.update_animation()
-    # enemy.draw()
+    enemy.update_animation()
+    enemy.draw()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -137,6 +154,8 @@ while run:
             if event.key == pygame.K_a:
                 moving_left = True
             if event.key == pygame.K_d:
+                moving_right = True
+            if event.key == pygame.K_j:
                 moving_right = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
