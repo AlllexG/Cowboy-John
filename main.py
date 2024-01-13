@@ -1,27 +1,15 @@
 import pygame
 import os
+from variables import *
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = int(SCREEN_WIDTH * 0.8)
-
 clock = pygame.time.Clock()
-FPS = 60
-
-GRAVITY = 0.75
-
-bullet_image = pygame.image.load("Images/Objects/bullet.png")
-
-BG = (236, 217, 149)
-RED = (255, 0, 0)
 
 moving_left = False
 moving_right = False
 shoot = False
 reload = False
-
-ANIMATION_COOLDOWN = 100
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Shooter")
@@ -159,7 +147,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
         self.speed = 20
-        self.image = bullet_image
+        self.image = BULLET_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.direction = direction
