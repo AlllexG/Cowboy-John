@@ -188,7 +188,6 @@ enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
 
 run = True
 while run:
-    print(reload)
     clock.tick(FPS)
     screen.fill(BG)
     pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
