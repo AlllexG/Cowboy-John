@@ -98,8 +98,8 @@ class Cowboy(pygame.sprite.Sprite):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = 20
             bullet = Bullet(
-                self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
-                self.rect.centery,
+                self.rect.centerx + (0.45 * self.rect.size[0] * self.direction),
+                self.rect.centery + 5,
                 self.direction,
             )
             bullet_group.add(bullet)
