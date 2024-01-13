@@ -11,26 +11,32 @@ FPS = 60
 
 GRAVITY = 0.75
 
-bullet_image = pygame.image.load('Images/Objects/bullet.png')
+bullet_image = pygame.image.load("Images/Objects/bullet.png")
 
 BG = (236, 217, 149)
 RED = (255, 0, 0)
 
 moving_left = False
 moving_right = False
+shoot = False
 
 ANIMATION_COOLDOWN = 100
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Shooter')
+pygame.display.set_caption("Shooter")
 
 
 class Cowboy(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed):
+    def __init__(self, char_type, x, y, scale, speed, ammo):
         pygame.sprite.Sprite.__init__(self)
 
         self.alive = True
         self.speed = speed
+        self.ammo = ammo
+        self.start_ammo = ammo
+        self.shoot_cooldown = 0
+        self.health = 100
+        self.max_health = self.health
         self.direction = 1
         self.vel_y = 0
         self.flip = False
@@ -42,20 +48,28 @@ class Cowboy(pygame.sprite.Sprite):
         self.action = 0
 
         self.animation_list = []
-        self.animation_types = ['Idle', 'Run', 'Jump']
+        self.animation_types = ["Idle", "Run", "Jump"]
         for animation in self.animation_types:
             temp_list = []
-            num_of_frames = len(os.listdir(f'Images/{char_type}/{animation}'))
+            num_of_frames = len(os.listdir(f"Images/{char_type}/{animation}"))
             for i in range(num_of_frames):
-                img = pygame.image.load(f'Images/{char_type}/{animation}/{i}.png')
-                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                img = pygame.image.load(f"Images/{char_type}/{animation}/{i}.png")
+                img = pygame.transform.scale(
+                    img, (int(img.get_width() * scale), int(img.get_height() * scale))
+                )
                 temp_list.append(img)
             self.animation_list.append(temp_list)
 
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-
+        
+    def update(self):
+        self.update_animation()
+        
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+	
     def move(self, left, right):
         move_x, move_y = 0, 0
 
@@ -85,6 +99,18 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.rect.x += move_x
         self.rect.y += move_y
+        
+    def shoot(self):
+        if self.shoot_cooldown == 0 and self.ammo > 0:
+            self.shoot_cooldown = 7
+            bullet = Bullet(
+                self.rect.centerx + (0.4 * self.rect.size[0] * self.direction),
+                self.rect.centery,
+                self.direction,
+            )
+            bullet_group.add(bullet)
+            self.ammo -= 1
+        
 
     def update_animation(self):
         self.image = self.animation_list[self.action][self.frame_index]
@@ -116,11 +142,27 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = (x, y)
         self.direction = direction
         
+    def update(self):
+        self.rect.x += (self.direction * self.speed)
         
+        if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
+            self.kill()
+            
+        if pygame.sprite.spritecollide(player, bullet_group, False):
+            if player.alive:
+                player.health -= 15
+                self.kill()
+                
+        if pygame.sprite.spritecollide(enemy, bullet_group, False):
+            if enemy.alive:
+                enemy.health -= 30
+                self.kill()
+
+
 bullet_group = pygame.sprite.Group()
 
-player = Cowboy('Player', 200, 200, 1.5, 7)
-enemy = Cowboy('Enemy', 400, 200, 1.5, 7)
+player = Cowboy("Player", 200, 200, 1.5, 7, 6)
+enemy = Cowboy("Enemy", 400, 200, 1.5, 7, 6)
 
 run = True
 while run:
@@ -128,13 +170,15 @@ while run:
     screen.fill(BG)
     pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
 
-    player.update_animation()
+    player.update()
     player.draw()
-    
+
     bullet_group.update()
     bullet_group.draw(screen)
 
     if player.alive:
+        if shoot:
+            player.shoot()
         if player.in_air:
             player.update_action(2)
         elif moving_left or moving_right:
@@ -156,7 +200,7 @@ while run:
             if event.key == pygame.K_d:
                 moving_right = True
             if event.key == pygame.K_j:
-                moving_right = True
+                shoot = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
 
@@ -165,6 +209,8 @@ while run:
                 moving_left = False
             if event.key == pygame.K_d:
                 moving_right = False
+            if event.key == pygame.K_j:
+                shoot = False
 
     pygame.display.update()
 
