@@ -30,7 +30,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.start_ammo = ammo
         self.shoot_cooldown = 0
         self.reload_cooldown = 0
-        self.health = 100
+        self.health = 10
         self.max_health = self.health
         self.direction = 1
         self.vel_y = 0
@@ -58,6 +58,19 @@ class Cowboy(pygame.sprite.Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+
+    def health_bar(self):
+        half_hearts_total = self.health / 2
+        half_heart_exists = half_hearts_total - int(half_hearts_total) != 0
+
+        for heart in range(int(self.max_health / 2)):
+            if int(half_hearts_total) > heart:
+                screen.blit(FULL_HEART_IMAGE, (heart * 50  + 10, 10))
+            elif half_heart_exists and int(half_hearts_total) == heart:
+                screen.blit(HALF_HEART_IMAGE, (heart * 50 + 10, 10))
+            else:
+                screen.blit(EMPTY_HEART_IMAGE, (heart * 50 + 10, 10))
+    
         
     def update(self):
         self.update_animation()
@@ -68,6 +81,8 @@ class Cowboy(pygame.sprite.Sprite):
 
         if self.reload_cooldown > 0:
             self.reload_cooldown -= 1
+
+        # self.health_bar()
 	
     def move(self, left, right):
         move_x, move_y = 0, 0
@@ -157,10 +172,11 @@ class HealthItem(pygame.sprite.Sprite):
 
     def update(self):
         if pygame.sprite.collide_rect(self, player):
-            player.health += 25
-            if player.health > player.max_health:
-                player.health = player.max_health
-            self.kill()
+            if player.health != player.max_health:
+                player.health += 2
+                if player.health > player.max_health:
+                    player.health = player.max_health
+                self.kill()
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -180,12 +196,12 @@ class Bullet(pygame.sprite.Sprite):
             
         if pygame.sprite.spritecollide(player, bullet_group, False):
             if player.alive:
-                player.health -= 15
+                player.health -= 0.5
                 self.kill()
                 
         if pygame.sprite.spritecollide(enemy, bullet_group, False):
             if enemy.alive:
-                enemy.health -= 30
+                enemy.health -= 2.5
                 self.kill()
 
 enemy_group = pygame.sprite.Group()
@@ -210,6 +226,7 @@ while run:
 
     player.update()
     player.draw()
+    player.health_bar()
 
     for enemy in enemy_group:
         enemy.update()
