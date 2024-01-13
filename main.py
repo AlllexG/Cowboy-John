@@ -21,7 +21,7 @@ def drawText(text, x, y):
 
 
 class Cowboy(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo):
+    def __init__(self, char_type, x, y, scale, speed, ammo, health):
         pygame.sprite.Sprite.__init__(self)
 
         self.alive = True
@@ -30,7 +30,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.start_ammo = ammo
         self.shoot_cooldown = 0
         self.reload_cooldown = 0
-        self.health = 10
+        self.health = health
         self.max_health = self.health
         self.direction = 1
         self.vel_y = 0
@@ -70,6 +70,10 @@ class Cowboy(pygame.sprite.Sprite):
                 screen.blit(HALF_HEART_IMAGE, (heart * 50 + 10, 10))
             else:
                 screen.blit(EMPTY_HEART_IMAGE, (heart * 50 + 10, 10))
+
+    def ammo_count(self):
+        for x in range(player.ammo):
+            screen.blit(BULLET_COUNT_IMAGE, (5 + (x * 30), 40))
     
         
     def update(self):
@@ -81,8 +85,6 @@ class Cowboy(pygame.sprite.Sprite):
 
         if self.reload_cooldown > 0:
             self.reload_cooldown -= 1
-
-        # self.health_bar()
 	
     def move(self, left, right):
         move_x, move_y = 0, 0
@@ -116,10 +118,10 @@ class Cowboy(pygame.sprite.Sprite):
         
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
-            self.shoot_cooldown = 20
+            self.shoot_cooldown = 30
             bullet = Bullet(
-                self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
-                self.rect.centery,
+                self.rect.centerx + (0 * self.rect.size[0] * self.direction),
+                self.rect.centery + 5,
                 self.direction,
             )
             bullet_group.add(bullet)
@@ -182,7 +184,7 @@ class HealthItem(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.speed = 20
+        self.speed = 50
         self.image = BULLET_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -196,13 +198,14 @@ class Bullet(pygame.sprite.Sprite):
             
         if pygame.sprite.spritecollide(player, bullet_group, False):
             if player.alive:
-                player.health -= 0.5
+                player.health -= 2
                 self.kill()
-                
-        if pygame.sprite.spritecollide(enemy, bullet_group, False):
-            if enemy.alive:
-                enemy.health -= 2.5
-                self.kill()
+        
+        for enemy in enemy_group:
+            if pygame.sprite.spritecollide(enemy, bullet_group, False):
+                if enemy.alive:
+                    enemy.health -= 5
+                    self.kill()
 
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
@@ -211,8 +214,8 @@ object_group = pygame.sprite.Group()
 health_1 = HealthItem(100, 360)
 object_group.add(health_1)
 
-player = Cowboy("Player", 200, 200, 1.5, 7, 6)
-enemy = Cowboy("Enemy", 400, 300, 1.5, 7, 6)
+player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10)
+enemy = Cowboy("Enemy", 500, 350, 1.5, 7, 6, 10)
 enemy_group.add(enemy)
 
 run = True
@@ -221,12 +224,10 @@ while run:
     screen.fill(BG)
     pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
 
-    for x in range(player.ammo):
-        screen.blit(BULLET_COUNT_IMAGE, (5 + (x * 30), 40))
-
     player.update()
     player.draw()
     player.health_bar()
+    player.ammo_count()
 
     for enemy in enemy_group:
         enemy.update()
