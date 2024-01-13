@@ -119,8 +119,8 @@ class Cowboy(pygame.sprite.Sprite):
     
     def reload(self):
         if self.ammo < 6:
-            self.reload_cooldown = 30 * (6 - self.ammo)
             self.ammo = 6
+            self.reload_cooldown = 30 * (6 - self.ammo)
 
         
 
@@ -158,7 +158,7 @@ class Cowboy(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.speed = 10
+        self.speed = 20
         self.image = bullet_image
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -194,6 +194,12 @@ while run:
 
     player.update()
     player.draw()
+
+    font = pygame.font.Font('PixelForce.ttf', 32)
+    img = font.render(f'{player.ammo}', True, (0, 0, 0))
+    screen.blit(img, (0, 0))
+    img = font.render(f'{player.health}', True, (200, 0, 0))
+    screen.blit(img, (30, 0))
 
     bullet_group.update()
     bullet_group.draw(screen)
