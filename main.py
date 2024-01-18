@@ -174,7 +174,6 @@ class Cowboy(pygame.sprite.Sprite):
                     self.move(ai_moving_left, ai_moving_right)
                     self.update_action(1)
                     self.vision.center = (self.rect.centerx + 102 * self.direction, self.rect.centery)
-                    pygame.draw.rect(SCREEN, RED, self.vision)
                     self.move_counter += 1
                     if self.move_counter > TILE_SIZE:
                         self.direction *= -1
@@ -193,6 +192,7 @@ class Cowboy(pygame.sprite.Sprite):
             if self.char_type == 'Enemy':
                 health = HealthItem(self.rect.centerx - 25, self.rect.centery - 25)
                 OBJECT_GROUP.add(health)
+            self.kill()
 
     def draw(self):
         SCREEN.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
@@ -214,9 +214,13 @@ class HealthItem(pygame.sprite.Sprite):
                     player.health = player.max_health
                 self.kill()
 
-        # self.vel_y += GRAVITY
-        # dy = self.vel_y
-        # self.rect.y += dy
+        self.vel_y += GRAVITY
+        dy = self.vel_y
+        if self.rect.bottom + dy > 400:
+            dy = 400 - self.rect.bottom
+            self.speed = 0
+        
+        self.rect.y += dy
         
 
 
@@ -246,9 +250,6 @@ class Bullet(pygame.sprite.Sprite):
                     enemy.health -= 5
                     self.kill()
 
-health_1 = HealthItem(100, 360)
-OBJECT_GROUP.add(health_1)
-
 player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 25)
 enemy1 = Cowboy("Enemy", 500, 350, 1.5, 2, 6, 10, 75)
 enemy2 = Cowboy("Enemy", 300, 350, 1.5, 2, 6, 10, 75)
@@ -269,6 +270,7 @@ while run:
         enemy.ai()
         enemy.update()
         enemy.draw()
+
 
     BULLET_GROUP.update()
     BULLET_GROUP.draw(SCREEN)
