@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 from variables import *
 
 pygame.init()
@@ -35,6 +36,11 @@ class Cowboy(pygame.sprite.Sprite):
         self.flip = False
         self.jump = False
         self.in_air = True
+        self.char_type = char_type
+
+        self.move_counter = 0
+        self.idling = False
+        self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
         self.frame_index = 0
@@ -44,9 +50,9 @@ class Cowboy(pygame.sprite.Sprite):
         self.animation_types = ["Idle", "Run", "Jump", "Death"]
         for animation in self.animation_types:
             temp_list = []
-            num_of_frames = len(os.listdir(f"Images/{char_type}/{animation}"))
+            num_of_frames = len(os.listdir(f"Images/{self.char_type}/{animation}"))
             for i in range(num_of_frames):
-                img = pygame.image.load(f"Images/{char_type}/{animation}/{i}.png")
+                img = pygame.image.load(f"Images/{self.char_type}/{animation}/{i}.png")
                 img = pygame.transform.scale(
                     img, (int(img.get_width() * scale), int(img.get_height() * scale))
                 )
@@ -150,6 +156,31 @@ class Cowboy(pygame.sprite.Sprite):
 
             self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
+
+    def ai(self):
+        if self.alive and player.alive:
+            if not self.idling and  random.randint(1, 200) == 1:
+                self.idling = True
+                self.update_action(0)
+                self.idle_counter = 50
+
+            if not self.idling:
+                if self.direction == 1:
+                    ai_moving_right = True
+                else:
+                    ai_moving_right = False
+                ai_moving_left = not ai_moving_right
+                self.move(ai_moving_left, ai_moving_right)
+                self.update_action(1)
+
+                self.move_counter += 1
+                if self.move_counter > TILE_SIZE:
+                    self.direction *= -1
+                    self.move_counter *= -1
+            else:
+                self.idle_counter -= 1
+                if self.idle_counter <= 0:
+                    self.idling = False
     
     def check_alive(self):
         if self.health <= 0:
@@ -157,6 +188,9 @@ class Cowboy(pygame.sprite.Sprite):
             self.speed = 0
             self.alive = False
             self.update_action(3)
+            if self.char_type == 'Enemy':
+                health = HealthItem(self.rect.centerx - 25, self.rect.centery - 25)
+                OBJECT_GROUP.add(health)
 
     def draw(self):
         SCREEN.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
@@ -166,6 +200,7 @@ class HealthItem(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = HEART_IMAGE
+        self.vel_y = -11
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
 
@@ -176,6 +211,11 @@ class HealthItem(pygame.sprite.Sprite):
                 if player.health > player.max_health:
                     player.health = player.max_health
                 self.kill()
+
+        # self.vel_y += GRAVITY
+        # dy = self.vel_y
+        # self.rect.y += dy
+        
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -208,8 +248,9 @@ health_1 = HealthItem(100, 360)
 OBJECT_GROUP.add(health_1)
 
 player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 25)
-enemy = Cowboy("Enemy", 500, 350, 1.5, 7, 6, 10, 50)
-ENEMY_GROUP.add(enemy)
+enemy1 = Cowboy("Enemy", 500, 350, 1.5, 2, 6, 10, 50)
+enemy2 = Cowboy("Enemy", 300, 350, 1.5, 2, 6, 10, 50)
+ENEMY_GROUP.add(enemy1, enemy2)
 
 run = True
 while run:
@@ -223,6 +264,7 @@ while run:
     player.ammo_count()
 
     for enemy in ENEMY_GROUP:
+        enemy.ai()
         enemy.update()
         enemy.draw()
 
@@ -248,9 +290,6 @@ while run:
 
         if player.reload_time == 0:
             reload = False
-
-    enemy.update()
-    enemy.draw()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
