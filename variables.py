@@ -7,8 +7,13 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = int(SCREEN_WIDTH * 0.8)
 
+level = 1
+ROWS = 16
+COLS = 150
+
 FPS = 60
-TILE_SIZE = 40
+TILE_SIZE = SCREEN_HEIGHT // ROWS
+TILE_TYPES = 21
 
 FONT = pygame.font.Font('PixelForce.ttf', 32)
 
