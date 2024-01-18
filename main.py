@@ -40,7 +40,7 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.move_counter = 0
         self.idling = False
-        self.vision = pygame.Rect(0, 0, 250, 20)
+        self.vision = pygame.Rect(0, 0, 150, 20)
         self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
