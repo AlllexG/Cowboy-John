@@ -40,6 +40,7 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.move_counter = 0
         self.idling = False
+        self.vision = pygame.Rect(0, 0, 250, 20)
         self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
@@ -120,13 +121,10 @@ class Cowboy(pygame.sprite.Sprite):
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = self.shooting_speed
-            bullet = Bullet(
-                self.rect.centerx,
-                self.rect.centery + 5,
-                self.direction,
-            )
+            bullet = Bullet(self.rect.centerx + (0.75 * self.rect.size[0] * self.direction), self.rect.centery, self.direction)
             BULLET_GROUP.add(bullet)
-            self.ammo -= 1
+            if self.char_type == 'Player':
+                self.ammo -= 1
     
     def reload(self):
         if pygame.time.get_ticks() - self.reload_time > 500:
@@ -163,24 +161,28 @@ class Cowboy(pygame.sprite.Sprite):
                 self.idling = True
                 self.update_action(0)
                 self.idle_counter = 50
-
-            if not self.idling:
-                if self.direction == 1:
-                    ai_moving_right = True
-                else:
-                    ai_moving_right = False
-                ai_moving_left = not ai_moving_right
-                self.move(ai_moving_left, ai_moving_right)
-                self.update_action(1)
-
-                self.move_counter += 1
-                if self.move_counter > TILE_SIZE:
-                    self.direction *= -1
-                    self.move_counter *= -1
+            if self.vision.colliderect(player.rect):
+                self.update_action(0)
+                self.shoot()
             else:
-                self.idle_counter -= 1
-                if self.idle_counter <= 0:
-                    self.idling = False
+                if not self.idling:
+                    if self.direction == 1:
+                        ai_moving_right = True
+                    else:
+                        ai_moving_right = False
+                    ai_moving_left = not ai_moving_right
+                    self.move(ai_moving_left, ai_moving_right)
+                    self.update_action(1)
+                    self.vision.center = (self.rect.centerx + 102 * self.direction, self.rect.centery)
+                    pygame.draw.rect(SCREEN, RED, self.vision)
+                    self.move_counter += 1
+                    if self.move_counter > TILE_SIZE:
+                        self.direction *= -1
+                        self.move_counter *= -1
+                else:
+                    self.idle_counter -= 1
+                    if self.idle_counter <= 0:
+                        self.idling = False
     
     def check_alive(self):
         if self.health <= 0:
@@ -248,8 +250,8 @@ health_1 = HealthItem(100, 360)
 OBJECT_GROUP.add(health_1)
 
 player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 25)
-enemy1 = Cowboy("Enemy", 500, 350, 1.5, 2, 6, 10, 50)
-enemy2 = Cowboy("Enemy", 300, 350, 1.5, 2, 6, 10, 50)
+enemy1 = Cowboy("Enemy", 500, 350, 1.5, 2, 6, 10, 75)
+enemy2 = Cowboy("Enemy", 300, 350, 1.5, 2, 6, 10, 75)
 ENEMY_GROUP.add(enemy1, enemy2)
 
 run = True
