@@ -1,7 +1,8 @@
+from variables import *
 import pygame
 import os
 import random
-from variables import *
+import csv
 
 pygame.init()
 
@@ -9,6 +10,12 @@ moving_left = False
 moving_right = False
 shoot = False
 reload = False
+
+images_list = []
+for x in range(TILE_TYPES):
+    current_image = pygame.image.load(f'Images/Tile/{x}.png')
+    current_image = pygame.transform.scale(current_image, (TILE_SIZE, TILE_SIZE))
+    images_list.append(current_image)
 
 pygame.display.set_caption("Shooter")
 
@@ -198,6 +205,40 @@ class Cowboy(pygame.sprite.Sprite):
         SCREEN.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
+class World():
+    def __init__(self):
+        self.obstacle_list = []
+        
+    def process_data(self, data_from_csvfile):
+        for y, row in enumerate(data_from_csvfile):
+            for x, tile in enumerate(row):
+                if tile >= 0:
+                    current_image = images_list[tile]
+                    image_rect = current_image.get_rect()
+                    image_rect.x = x * TILE_SIZE
+                    image_rect.y = y * TILE_SIZE
+                    tile_data = (current_image, image_rect)
+                    if tile in range(9): #image of sand
+                        self.obstacle_list.append(tile_data)
+                    elif tile in (9, 10): #image of water
+                        pass
+                    elif tile in (11, 12, 13, 14, 18, 19): #image of decoration
+                        pass
+                    elif tile == 15: #create player
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 7, 6, 10, 25)
+                    elif tile == 16: #create enemies
+                        enemy = Cowboy("Enemy", x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
+                        ENEMY_GROUP.add(enemy)
+                    elif tile == 17: # create exit
+                        pass
+                    
+        return player
+    
+    def draw(self):
+        for tile in self.obstacle_list:
+            SCREEN.blit(tile[0], tile[1])
+                        
+                    
 class HealthItem(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -220,8 +261,7 @@ class HealthItem(pygame.sprite.Sprite):
             dy = 400 - self.rect.bottom
             self.speed = 0
         
-        self.rect.y += dy
-        
+        self.rect.y += dy     
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -250,17 +290,28 @@ class Bullet(pygame.sprite.Sprite):
                     enemy.health -= 5
                     self.kill()
 
-player = Cowboy("Player", 200, 200, 1.5, 7, 6, 10, 25)
-enemy1 = Cowboy("Enemy", 500, 350, 1.5, 2, 6, 10, 75)
-enemy2 = Cowboy("Enemy", 300, 350, 1.5, 2, 6, 10, 75)
-ENEMY_GROUP.add(enemy1, enemy2)
+world_data = []
+for row in range(ROWS):
+    current_row = [-1] * COLS
+    world_data.append(current_row)
+
+with open(f'level_{level}_data.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for x, row in enumerate(reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+            
+world = World()
+player = world.process_data(world_data)
 
 run = True
 while run:
     CLOCK.tick(FPS)
     SCREEN.fill(BG)
     pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
-
+    
+    world.draw()
+ 
     player.update()
     player.draw()
     player.health_bar()

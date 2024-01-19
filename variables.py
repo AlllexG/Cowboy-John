@@ -13,7 +13,7 @@ COLS = 150
 
 FPS = 60
 TILE_SIZE = SCREEN_HEIGHT // ROWS
-TILE_TYPES = 21
+TILE_TYPES = 20
 
 FONT = pygame.font.Font('PixelForce.ttf', 32)
 
