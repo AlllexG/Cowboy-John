@@ -231,7 +231,7 @@ class World:
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
-                        EXIT_GROUP.add(decoration)
+                        EXIT_GROUP.add(exit)
         
         return player
                     
