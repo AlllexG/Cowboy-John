@@ -35,6 +35,9 @@ ANIMATION_COOLDOWN = 100
 ENEMY_GROUP = pygame.sprite.Group()
 BULLET_GROUP = pygame.sprite.Group()
 OBJECT_GROUP = pygame.sprite.Group()
+DECORATION_GROUP = pygame.sprite.Group()
+WATER_GROUP = pygame.sprite.Group()
+EXIT_GROUP = pygame.sprite.Group()
 
 CLOCK = pygame.time.Clock()
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))

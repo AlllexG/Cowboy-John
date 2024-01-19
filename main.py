@@ -205,7 +205,7 @@ class Cowboy(pygame.sprite.Sprite):
         SCREEN.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
-class World():
+class World:
     def __init__(self):
         self.obstacle_list = []
         
@@ -221,23 +221,49 @@ class World():
                     if tile in range(9): #image of sand
                         self.obstacle_list.append(tile_data)
                     elif tile in (9, 10): #image of water
-                        pass
+                        water = Water(current_image, x * TILE_SIZE, y * TILE_SIZE)
+                        WATER_GROUP.add(water)
                     elif tile in (11, 12, 13, 14, 18, 19): #image of decoration
-                        pass
+                        decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
+                        DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
                         player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 7, 6, 10, 25)
                     elif tile == 16: #create enemies
                         enemy = Cowboy("Enemy", x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: # create exit
-                        pass
-                    
+                        exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
+                        EXIT_GROUP.add(decoration)
+                        
         return player
     
     def draw(self):
         for tile in self.obstacle_list:
             SCREEN.blit(tile[0], tile[1])
-                        
+
+
+class Decoration(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))
+        
+        
+class Water(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))
+        
+        
+class Exit(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))                   
                     
 class HealthItem(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -307,10 +333,12 @@ player = world.process_data(world_data)
 run = True
 while run:
     CLOCK.tick(FPS)
-    SCREEN.fill(BG)
-    pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
     
     world.draw()
+    
+    SCREEN.fill(BG)
+    pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
+
  
     player.update()
     player.draw()
@@ -328,6 +356,15 @@ while run:
 
     OBJECT_GROUP.update()
     OBJECT_GROUP.draw(SCREEN)
+    
+    DECORATION_GROUP.update()
+    DECORATION_GROUP.draw(SCREEN)
+    
+    WATER_GROUP.update()
+    WATER_GROUP.draw(SCREEN)
+    
+    EXIT_GROUP.update()
+    EXIT_GROUP.draw(SCREEN)
 
     if player.alive:
         if shoot and not reload:
