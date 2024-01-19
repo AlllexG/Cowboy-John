@@ -140,8 +140,6 @@ class Cowboy(pygame.sprite.Sprite):
         if self.ammo == 6:
             self.reload_time = 0
 
-        
-
     def update_animation(self):
         self.image = self.animation_list[self.action][self.frame_index]
 
@@ -229,14 +227,14 @@ class World:
                     elif tile == 15: #create player
                         player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 7, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy("Enemy", x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
-                    elif tile == 17: # create exit
+                    elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         EXIT_GROUP.add(decoration)
-                        
+        
         return player
-    
+                    
     def draw(self):
         for tile in self.obstacle_list:
             SCREEN.blit(tile[0], tile[1])
@@ -247,7 +245,7 @@ class Decoration(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
         
         
 class Water(pygame.sprite.Sprite):
@@ -255,7 +253,7 @@ class Water(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
         
         
 class Exit(pygame.sprite.Sprite):
@@ -263,7 +261,7 @@ class Exit(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_TYPES - self.image.get_height()))                   
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))                   
                     
 class HealthItem(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -334,12 +332,11 @@ run = True
 while run:
     CLOCK.tick(FPS)
     
+    SCREEN.fill(BG)
     world.draw()
     
-    SCREEN.fill(BG)
     pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
 
- 
     player.update()
     player.draw()
     player.health_bar()
@@ -349,7 +346,6 @@ while run:
         enemy.ai()
         enemy.update()
         enemy.draw()
-
 
     BULLET_GROUP.update()
     BULLET_GROUP.draw(SCREEN)
