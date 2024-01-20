@@ -36,7 +36,7 @@ def draw_background():
 
 
 class Cowboy(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo, health, shooting_speed):
+    def __init__(self, char_type, x, y, scale, speed, ammo, health, shooting_cooldown):
         pygame.sprite.Sprite.__init__(self)
 
         self.alive = True
@@ -44,7 +44,7 @@ class Cowboy(pygame.sprite.Sprite):
         self.ammo = ammo
         self.start_ammo = ammo
         self.shoot_cooldown = 0
-        self.shooting_speed = shooting_speed
+        self.shooting_speed = shooting_cooldown
         self.reload_time = 0
         self.health = health
         self.max_health = self.health
@@ -213,7 +213,7 @@ class Cowboy(pygame.sprite.Sprite):
                 self.idle_counter = 50
             if self.vision.colliderect(player.rect):
                 self.update_action(0)
-                self.shoot()
+                self.shoot()    
             else:
                 if not self.idling:
                     if self.direction == 1:
@@ -223,7 +223,7 @@ class Cowboy(pygame.sprite.Sprite):
                     ai_moving_left = not ai_moving_right
                     self.move(ai_moving_left, ai_moving_right)
                     self.update_action(1)
-                    self.vision.center = (self.rect.centerx + 102 * self.direction, self.rect.centery)
+                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
                     self.move_counter += 1
                     if self.move_counter > TILE_SIZE:
                         self.direction *= -1
@@ -277,7 +277,7 @@ class World:
                     elif tile == 15: #create player
                         player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1, 8, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1, 1, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1, 1, 6, 10, 100)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
