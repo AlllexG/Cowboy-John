@@ -70,7 +70,7 @@ class Cowboy(pygame.sprite.Sprite):
             temp_list = []
             num_of_frames = len(os.listdir(f"Images/{self.char_type}/{animation}"))
             for i in range(num_of_frames):
-                img = pygame.image.load(f"Images/{self.char_type}/{animation}/{i}.png")
+                img = pygame.image.load(f"Images/{self.char_type}/{animation}/{i}.png").convert_alpha()
                 img = pygame.transform.scale(
                     img, (int(img.get_width() * scale), int(img.get_height() * scale))
                 )
@@ -412,8 +412,6 @@ while run:
     draw_background()
     
     world.draw()
-    
-    pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
 
     player.update()
     player.draw()
