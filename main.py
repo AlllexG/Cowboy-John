@@ -70,6 +70,8 @@ class Cowboy(pygame.sprite.Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
 
     def health_bar(self):
         half_hearts_total = self.health / 2
@@ -117,10 +119,23 @@ class Cowboy(pygame.sprite.Sprite):
             self.vel_y = 10
 
         move_y += self.vel_y
-
-        if self.rect.bottom + move_y > 400:
-            move_y = 400 - self.rect.bottom
-            self.in_air = False
+        
+        #check collision
+        for tile in world.obstacle_list:
+            #check collision in the x direction
+            if tile[1].colliderect(self.rect.x + move_x, self.rect.y, self.width, self.height):
+                move_x = 0
+            #check collision in the y direction
+            if tile[1].colliderect(self.rect.x, self.rect.y + move_y, self.width, self.height):
+                #check if below the ground, i.e. jumping
+                if self.vel_y < 0:
+                    self.vel_y = 0
+                    move_y = tile[1].bottom - self.rect.top
+				#check if above the ground, i.e. falling
+                elif self.vel_y >= 0:
+                    self.vel_y = 0
+                    self.in_air = False
+                    move_y = tile[1].top - self.rect.bottom
 
         self.rect.x += move_x
         self.rect.y += move_y
@@ -225,9 +240,9 @@ class World:
                         decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
-                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 7, 6, 10, 25)
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 10, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 5, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
@@ -270,6 +285,8 @@ class HealthItem(pygame.sprite.Sprite):
         self.vel_y = -11
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
 
     def update(self):
         if pygame.sprite.collide_rect(self, player):
@@ -280,12 +297,19 @@ class HealthItem(pygame.sprite.Sprite):
                 self.kill()
 
         self.vel_y += GRAVITY
-        dy = self.vel_y
-        if self.rect.bottom + dy > 400:
-            dy = 400 - self.rect.bottom
-            self.speed = 0
+        move_y = self.vel_y
         
-        self.rect.y += dy     
+        #check collision
+        for tile in world.obstacle_list:
+            #check collision in the y direction
+            if tile[1].colliderect(self.rect.x, self.rect.y + move_y, self.width, self.height):
+				#check if above the ground, i.e. falling
+                if self.vel_y >= 0:
+                    self.vel_y = 0
+                    self.in_air = False
+                    move_y = tile[1].top - self.rect.bottom
+        
+        self.rect.y += move_y    
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -302,6 +326,11 @@ class Bullet(pygame.sprite.Sprite):
         
         if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
             self.kill()
+            
+        #check for collision with level
+        for tile in world.obstacle_list:
+            if tile[1].colliderect(self.rect):
+                self.kill()
             
         if pygame.sprite.spritecollide(player, BULLET_GROUP, False):
             if player.alive:
@@ -333,6 +362,11 @@ while run:
     CLOCK.tick(FPS)
     
     SCREEN.fill(BG)
+    SCREEN.blit(SKY_IMAGE, (0, 0))
+    SCREEN.blit(SAND_2_IMAGE, (0, SCREEN_HEIGHT - SAND_2_IMAGE.get_height() - 300))
+    SCREEN.blit(SAND_3_IMAGE, (0, SCREEN_HEIGHT - SAND_3_IMAGE.get_height() - 150))
+    SCREEN.blit(SAND_1_IMAGE, (0, SCREEN_HEIGHT - SAND_1_IMAGE.get_height()))
+    
     world.draw()
     
     pygame.draw.line(SCREEN, RED, (0, 400), (SCREEN_WIDTH, 400))
