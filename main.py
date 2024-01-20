@@ -23,6 +23,16 @@ pygame.display.set_caption("Shooter")
 def drawText(text, x, y):
     img = FONT.render(text, True, (0, 0, 0))
     SCREEN.blit(img, (x, y))
+    
+
+def draw_background():
+    SCREEN.fill(BG)
+    width = SKY_IMAGE.get_width()
+    for x in range(5):
+        SCREEN.blit(SKY_IMAGE, ((x * width) - background_scroll * 0.5, 0))
+        SCREEN.blit(SAND_2_IMAGE, ((x * width) - background_scroll * 0.6, SCREEN_HEIGHT - SAND_2_IMAGE.get_height() - 300))
+        SCREEN.blit(SAND_3_IMAGE, ((x * width) - background_scroll * 0.7, SCREEN_HEIGHT - SAND_3_IMAGE.get_height() - 150))
+        SCREEN.blit(SAND_1_IMAGE, ((x * width) - background_scroll * 0.8, SCREEN_HEIGHT - SAND_1_IMAGE.get_height()))
 
 
 class Cowboy(pygame.sprite.Sprite):
@@ -99,6 +109,7 @@ class Cowboy(pygame.sprite.Sprite):
 	
     def move(self, left, right):
         move_x, move_y = 0, 0
+        screen_scroll = 0
 
         if left:
             move_x = -self.speed
@@ -125,6 +136,10 @@ class Cowboy(pygame.sprite.Sprite):
             #check collision in the x direction
             if tile[1].colliderect(self.rect.x + move_x, self.rect.y, self.width, self.height):
                 move_x = 0
+                #if the ai has hit a wall then make it turn round
+                if self.char_type == 'Enemy':
+                    self.direction *= -1
+                    self.move_counter = 0
             #check collision in the y direction
             if tile[1].colliderect(self.rect.x, self.rect.y + move_y, self.width, self.height):
                 #check if below the ground, i.e. jumping
@@ -136,10 +151,25 @@ class Cowboy(pygame.sprite.Sprite):
                     self.vel_y = 0
                     self.in_air = False
                     move_y = tile[1].top - self.rect.bottom
-
+                    
+        #check if going off the edges of the screen
+        if self.char_type == 'Player':
+            if self.rect.left + move_x < 0 or self.rect.right + move_x > SCREEN_WIDTH:
+                move_x = 0
+                
         self.rect.x += move_x
         self.rect.y += move_y
         
+        #update scroll based on player position
+        if self.char_type == 'Player':
+            if (self.rect.right > SCREEN_WIDTH - SCROLL_THRESH and\
+                background_scroll < (world.level_length * TILE_SIZE) - SCREEN_WIDTH)\
+                or (self.rect.left < SCROLL_THRESH and background_scroll > abs(move_x)):
+                self.rect.x -= move_x
+                screen_scroll = -move_x
+                
+        return screen_scroll
+                
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = self.shooting_speed
@@ -202,6 +232,9 @@ class Cowboy(pygame.sprite.Sprite):
                     self.idle_counter -= 1
                     if self.idle_counter <= 0:
                         self.idling = False
+                        
+        #scroll
+        self.rect.x += screen_scroll
     
     def check_alive(self):
         if self.health <= 0:
@@ -223,6 +256,8 @@ class World:
         self.obstacle_list = []
         
     def process_data(self, data_from_csvfile):
+        self.level_length = len(data_from_csvfile[0])
+        
         for y, row in enumerate(data_from_csvfile):
             for x, tile in enumerate(row):
                 if tile >= 0:
@@ -240,9 +275,9 @@ class World:
                         decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
-                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 10, 6, 10, 25)
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 5, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 4, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
@@ -252,6 +287,7 @@ class World:
                     
     def draw(self):
         for tile in self.obstacle_list:
+            tile[1][0] += screen_scroll
             SCREEN.blit(tile[0], tile[1])
 
 
@@ -261,6 +297,9 @@ class Decoration(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+    
+    def update(self):
+        self.rect.x += screen_scroll
         
         
 class Water(pygame.sprite.Sprite):
@@ -269,6 +308,9 @@ class Water(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+    
+    def update(self):
+        self.rect.x += screen_scroll
         
         
 class Exit(pygame.sprite.Sprite):
@@ -276,7 +318,10 @@ class Exit(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))                   
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+    
+    def update(self):
+        self.rect.x += screen_scroll                   
                     
 class HealthItem(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -289,6 +334,9 @@ class HealthItem(pygame.sprite.Sprite):
         self.height = self.image.get_height()
 
     def update(self):
+        #scroll
+        self.rect.x += screen_scroll
+        
         if pygame.sprite.collide_rect(self, player):
             if player.health != player.max_health:
                 player.health += 2
@@ -299,15 +347,15 @@ class HealthItem(pygame.sprite.Sprite):
         self.vel_y += GRAVITY
         move_y = self.vel_y
         
-        #check collision
         for tile in world.obstacle_list:
-            #check collision in the y direction
             if tile[1].colliderect(self.rect.x, self.rect.y + move_y, self.width, self.height):
-				#check if above the ground, i.e. falling
                 if self.vel_y >= 0:
                     self.vel_y = 0
                     self.in_air = False
                     move_y = tile[1].top - self.rect.bottom
+                elif self.vel_y < 0:
+                    self.vel_y = 0
+                    move_y = tile[1].bottom - self.rect.top
         
         self.rect.y += move_y    
 
@@ -322,7 +370,7 @@ class Bullet(pygame.sprite.Sprite):
         self.direction = direction
         
     def update(self):
-        self.rect.x += (self.direction * self.speed)
+        self.rect.x += (self.direction * self.speed) + screen_scroll
         
         if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
             self.kill()
@@ -361,11 +409,7 @@ run = True
 while run:
     CLOCK.tick(FPS)
     
-    SCREEN.fill(BG)
-    SCREEN.blit(SKY_IMAGE, (0, 0))
-    SCREEN.blit(SAND_2_IMAGE, (0, SCREEN_HEIGHT - SAND_2_IMAGE.get_height() - 300))
-    SCREEN.blit(SAND_3_IMAGE, (0, SCREEN_HEIGHT - SAND_3_IMAGE.get_height() - 150))
-    SCREEN.blit(SAND_1_IMAGE, (0, SCREEN_HEIGHT - SAND_1_IMAGE.get_height()))
+    draw_background()
     
     world.draw()
     
@@ -408,7 +452,8 @@ while run:
             player.update_action(1)
         else:
             player.update_action(0)
-        player.move(moving_left, moving_right)
+        screen_scroll = player.move(moving_left, moving_right)
+        background_scroll -= screen_scroll
 
         if player.reload_time == 0:
             reload = False

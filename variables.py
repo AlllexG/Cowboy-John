@@ -16,8 +16,8 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 TILE_TYPES = 20
 
 SCROLL_THRESH = 200
-SCREEN_SCROLL = 0
-BACKGROUND_SCROLL = 0 
+screen_scroll = 0
+background_scroll = 0
 
 FONT = pygame.font.Font('PixelForce.ttf', 32)
 
