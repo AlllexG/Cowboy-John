@@ -41,7 +41,7 @@ SKY_IMAGE = pygame.image.load("Images/Background/sky.png").convert_alpha()
 BG = (236, 217, 149)
 RED = (255, 0, 0)
 
-ANIMATION_COOLDOWN = 100
+ANIMATION_COOLDOWN = 150
 
 ENEMY_GROUP = pygame.sprite.Group()
 BULLET_GROUP = pygame.sprite.Group()

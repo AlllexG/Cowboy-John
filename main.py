@@ -275,9 +275,9 @@ class World:
                         decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
-                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 25)
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1, 8, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 4, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1, 1, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
@@ -363,7 +363,7 @@ class HealthItem(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.speed = 50
+        self.speed = 30
         self.image = BULLET_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -405,7 +405,7 @@ with open(f'level_{level}_data.csv', newline='') as csvfile:
 world = World()
 player = world.process_data(world_data)
 
-run = True
+run = 1
 while run:
     CLOCK.tick(FPS)
     
@@ -458,7 +458,7 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
+            run = 0
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
