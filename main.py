@@ -28,11 +28,11 @@ def drawText(text, x, y):
 def draw_background():
     SCREEN.fill(BG)
     width = SKY_IMAGE.get_width()
-    for x in range(5):
+    for x in range(4):
         SCREEN.blit(SKY_IMAGE, ((x * width) - background_scroll * 0.5, 0))
-        SCREEN.blit(SAND_2_IMAGE, ((x * width) - background_scroll * 0.6, SCREEN_HEIGHT - SAND_2_IMAGE.get_height() - 300))
-        SCREEN.blit(SAND_3_IMAGE, ((x * width) - background_scroll * 0.7, SCREEN_HEIGHT - SAND_3_IMAGE.get_height() - 150))
-        SCREEN.blit(SAND_1_IMAGE, ((x * width) - background_scroll * 0.8, SCREEN_HEIGHT - SAND_1_IMAGE.get_height()))
+        SCREEN.blit(SAND_3_IMAGE, ((x * width) - background_scroll * 0.5, SCREEN_HEIGHT - SAND_3_IMAGE.get_height() - 250))
+        SCREEN.blit(SAND_2_IMAGE, ((x * width) - background_scroll * 0.6, SCREEN_HEIGHT - SAND_2_IMAGE.get_height() - 270))
+        SCREEN.blit(SAND_1_IMAGE, ((x * width) - background_scroll * 0.8, SCREEN_HEIGHT - SAND_1_IMAGE.get_height() - 10))
 
 
 class Cowboy(pygame.sprite.Sprite):
