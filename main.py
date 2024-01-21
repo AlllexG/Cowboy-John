@@ -461,7 +461,7 @@ class Bullet(pygame.sprite.Sprite):
 
 start_button = Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, START_BUTTON_IMAGE, 1)
 exit_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, EXIT_BUTTON_IMAGE, 1)
-restart_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, RESTART_BUTTON_IMAGE, 1)
+restart_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 50, RESTART_BUTTON_IMAGE, 2)
 
 
 world_data = []
