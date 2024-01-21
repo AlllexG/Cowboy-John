@@ -1,16 +1,39 @@
 from variables import *
 from button import Button
+from pygame import mixer
 import pygame
 import os
 import random
 import csv
 
 pygame.init()
+mixer.init()
 
 moving_left = False
 moving_right = False
 shoot = False
 reload = False
+
+# Load music and sounds
+pygame.mixer.music.load('Audio/Music.mp3')
+pygame.mixer.music.set_volume(0.25)
+pygame.mixer.music.play(-1, 0.0, 0)
+
+jump_fx = pygame.mixer.Sound('Audio/Jump.wav')
+jump_fx.set_volume(0.5)
+
+gunshot_fx = pygame.mixer.Sound('Audio/Gunshot.wav')
+gunshot_fx.set_volume(0.5)
+
+health_fx = pygame.mixer.Sound('Audio/Health.wav')
+health_fx.set_volume(0.7)
+
+spin_fx = pygame.mixer.Sound('Audio/CylinderSpin.wav')
+spin_fx.set_volume(0.5)
+
+bullet_fx = pygame.mixer.Sound('Audio/Bullet.wav')
+bullet_fx.set_volume(0.6)
+
 
 images_list = []
 for x in range(TILE_TYPES):
@@ -18,7 +41,7 @@ for x in range(TILE_TYPES):
     current_image = pygame.transform.scale(current_image, (TILE_SIZE, TILE_SIZE))
     images_list.append(current_image)
 
-pygame.display.set_caption("Shooter")
+pygame.display.set_caption("Cowboy John")
 
 
 def drawText(text, x, y):
@@ -58,7 +81,7 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.move_counter = 0
         self.idling = False
-        self.vision = pygame.Rect(0, 0, 250, 20)
+        self.vision = pygame.Rect(0, 0, 200, 20)
         self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
@@ -174,13 +197,16 @@ class Cowboy(pygame.sprite.Sprite):
             BULLET_GROUP.add(bullet)
             if self.char_type == 'Player':
                 self.ammo -= 1
+            gunshot_fx.play()
     
     def reload(self):
         if pygame.time.get_ticks() - self.reload_time > 500:
             self.ammo += 1
+            bullet_fx.play()
             self.reload_time = pygame.time.get_ticks()
         if self.ammo == 6:
             self.reload_time = 0
+            spin_fx.play()
 
     def update_animation(self):
         self.image = self.animation_list[self.action][self.frame_index]
@@ -274,7 +300,7 @@ class World:
                     elif tile == 15: #create player
                         player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 30)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 50)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 60)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
@@ -339,6 +365,7 @@ class HealthItem(pygame.sprite.Sprite):
                 player.health += 2
                 if player.health > player.max_health:
                     player.health = player.max_health
+                health_fx.play()
                 self.kill()
 
         self.vel_y += GRAVITY
@@ -419,7 +446,8 @@ while run:
         #add buttons
         if start_button.draw(SCREEN):
             start_game = True
-        exit_button.draw(SCREEN)
+        if exit_button.draw(SCREEN):
+            start_game = False
     else:
         draw_background()
         
@@ -470,30 +498,30 @@ while run:
                 reload = False
                 
     for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = 0
-                
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    moving_left = True
-                if event.key == pygame.K_d:
-                    moving_right = True
-                if event.key == pygame.K_j:
-                    shoot = True
-                if event.key == pygame.K_SPACE and player.alive:
-                    player.jump = True
-                if event.key == pygame.K_k and player.reload_time == 0 and player.ammo < 6:
-                    reload = True
-                    player.reload_time = pygame.time.get_ticks()
-                    
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_a:
-                    moving_left = False
-                if event.key == pygame.K_d:
-                    moving_right = False
-                if event.key == pygame.K_j:
-                    shoot = False    
-                    
+        if event.type == pygame.QUIT:
+            run = 0
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                moving_left = True
+            if event.key == pygame.K_d:
+                moving_right = True
+            if event.key == pygame.K_j:
+                shoot = True
+            if event.key == pygame.K_SPACE and player.alive:
+                player.jump = True
+            if event.key == pygame.K_k and player.reload_time == 0 and player.ammo < 6:
+                reload = True
+                player.reload_time = pygame.time.get_ticks()
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                moving_left = False
+            if event.key == pygame.K_d:
+                moving_right = False
+            if event.key == pygame.K_j:
+                shoot = False
+
     pygame.display.update()
         
 pygame.quit()
