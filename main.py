@@ -314,6 +314,24 @@ class World:
             SCREEN.blit(tile[0], tile[1])
 
 
+class ScreenFade():
+    def __init__(self, direction, colour, speed):
+        self.direction = direction
+        self.colour = colour
+        self.speed = speed
+        self.fade_counter = 0
+
+    def fade(self):
+        self.fade_counter += self.speed
+        pygame.draw.rect(SCREEN, self.colour, (0, 0, SCREEN_WIDTH, 0 + self.fade_counter))
+
+
+
+# Create screen fades
+death_fade = ScreenFade(2, RED, 4)
+
+
+
 class Decoration(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         pygame.sprite.Sprite.__init__(self)
