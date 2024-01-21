@@ -192,7 +192,12 @@ class Cowboy(pygame.sprite.Sprite):
         #check collision with water
         if pygame.sprite.spritecollide(self, WATER_GROUP, False):
             self.health = 0
-        
+            
+        #check collision with exit
+        level_complete = False
+        if pygame.sprite.spritecollide(self, EXIT_GROUP, False):
+            level_complete = True
+            
         #check if fallen of the map
         if self.rect.bottom > SCREEN_HEIGHT:
             self.health = 0
@@ -213,7 +218,7 @@ class Cowboy(pygame.sprite.Sprite):
                 self.rect.x -= move_x
                 screen_scroll = -move_x
                 
-        return screen_scroll
+        return screen_scroll, level_complete
                 
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
@@ -535,9 +540,24 @@ while run:
             else:
                 player.update_action(0)
                 
-            screen_scroll = player.move(moving_left, moving_right)
+            screen_scroll, level_complete = player.move(moving_left, moving_right) 
             background_scroll -= screen_scroll
             
+            #check if player has completed the level
+            if level_complete:
+                level += 1
+                background_scroll = 0
+                world_data = reset_level()
+                if level <= MAX_LEVELS:
+                    with open(f'level{level}_data.csv', newline='') as csvfile:
+                        reader = csv.reader(csvfile, delimiter=',')
+                        for x, row in enumerate(reader):
+                            for y, tile in enumerate(row):
+                                world_data[x][y] = int(tile)
+                                
+                    world = World()
+                    player = world.process_data(world_data)
+                    
             if player.reload_time == 0:
                 reload = False
         else:
