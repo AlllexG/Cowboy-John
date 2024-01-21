@@ -98,7 +98,7 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.move_counter = 0
         self.idling = False
-        self.vision = pygame.Rect(0, 0, 250, 20)
+        self.vision = pygame.Rect(0, 0, 200, 20)
         self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
@@ -192,7 +192,12 @@ class Cowboy(pygame.sprite.Sprite):
         #check collision with water
         if pygame.sprite.spritecollide(self, WATER_GROUP, False):
             self.health = 0
-        
+            
+        #check collision with exit
+        level_complete = False
+        if pygame.sprite.spritecollide(self, EXIT_GROUP, False):
+            level_complete = True
+            
         #check if fallen of the map
         if self.rect.bottom > SCREEN_HEIGHT:
             self.health = 0
@@ -213,7 +218,7 @@ class Cowboy(pygame.sprite.Sprite):
                 self.rect.x -= move_x
                 screen_scroll = -move_x
                 
-        return screen_scroll
+        return screen_scroll, level_complete
                 
     def shoot(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
@@ -271,7 +276,7 @@ class Cowboy(pygame.sprite.Sprite):
                     ai_moving_left = not ai_moving_right
                     self.move(ai_moving_left, ai_moving_right)
                     self.update_action(1)
-                    self.vision.center = (self.rect.centerx + 100 * self.direction, self.rect.centery)
+                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
                     self.move_counter += 1
                     if self.move_counter > TILE_SIZE:
                         self.direction *= -1
@@ -347,12 +352,14 @@ class ScreenFade():
         self.fade_counter = 0
 
     def fade(self):
-        fade_complete = False
         self.fade_counter += self.speed
         pygame.draw.rect(SCREEN, self.colour, (0, 0, SCREEN_WIDTH, 0 + self.fade_counter))
-        if self.fade_counter >= SCREEN_WIDTH:
-            fade_complete = True
-        return fade_complete  
+
+
+
+# Create screen fades
+death_fade = ScreenFade(2, RED, 4)
+
 
 
 class Decoration(pygame.sprite.Sprite):
@@ -428,7 +435,7 @@ class HealthItem(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.speed = 15
+        self.speed = 30
         self.image = BULLET_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -475,9 +482,6 @@ with open(f'level{level}_data.csv', newline='') as csvfile:
             
 world = World()
 player = world.process_data(world_data)
-
-# Create screen fades
-death_fade = ScreenFade(2, RED, 4)
 
 run = 1
 while run:
@@ -535,9 +539,24 @@ while run:
             else:
                 player.update_action(0)
                 
-            screen_scroll = player.move(moving_left, moving_right)
+            screen_scroll, level_complete = player.move(moving_left, moving_right) 
             background_scroll -= screen_scroll
             
+            #check if player has completed the level
+            if level_complete:
+                level += 1
+                background_scroll = 0
+                world_data = reset_level()
+                if level <= MAX_LEVELS:
+                    with open(f'level{level}_data.csv', newline='') as csvfile:
+                        reader = csv.reader(csvfile, delimiter=',')
+                        for x, row in enumerate(reader):
+                            for y, tile in enumerate(row):
+                                world_data[x][y] = int(tile)
+                                
+                    world = World()
+                    player = world.process_data(world_data)
+                    
             if player.reload_time == 0:
                 reload = False
         else:
