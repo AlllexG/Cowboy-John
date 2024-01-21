@@ -57,7 +57,7 @@ class Cowboy(pygame.sprite.Sprite):
 
         self.move_counter = 0
         self.idling = False
-        self.vision = pygame.Rect(0, 0, 150, 20)
+        self.vision = pygame.Rect(0, 0, 250, 20)
         self.idle_counter = 0
 
         self.update_time = pygame.time.get_ticks()
@@ -271,9 +271,9 @@ class World:
                         decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
-                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 25)
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 30)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 50)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
