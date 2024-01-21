@@ -9,7 +9,7 @@ SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 CLOCK = pygame.time.Clock()
 
-level = 1
+level = 3
 ROWS = 16
 COLS = 50
 
