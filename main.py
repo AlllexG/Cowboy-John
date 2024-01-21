@@ -1,4 +1,5 @@
 from variables import *
+from button import Button
 from pygame import mixer
 import pygame
 import os
@@ -413,6 +414,12 @@ class Bullet(pygame.sprite.Sprite):
                 if enemy.alive:
                     enemy.health -= 5
                     self.kill()
+                    
+
+start_button = Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, START_BUTTON_IMAGE, 1)
+exit_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, EXIT_BUTTON_IMAGE, 1)
+restart_button = Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, RESTART_BUTTON_IMAGE, 1)
+
 
 world_data = []
 for row in range(ROWS):
@@ -432,53 +439,64 @@ run = 1
 while run:
     CLOCK.tick(FPS)
     
-    draw_background()
-    
-    world.draw()
-
-    player.update()
-    player.draw()
-    player.health_bar()
-    player.ammo_count()
-
-    for enemy in ENEMY_GROUP:
-        enemy.ai()
-        enemy.update()
-        enemy.draw()
-
-    BULLET_GROUP.update()
-    BULLET_GROUP.draw(SCREEN)
-
-    OBJECT_GROUP.update()
-    OBJECT_GROUP.draw(SCREEN)
-    
-    DECORATION_GROUP.update()
-    DECORATION_GROUP.draw(SCREEN)
-    
-    WATER_GROUP.update()
-    WATER_GROUP.draw(SCREEN)
-    
-    EXIT_GROUP.update()
-    EXIT_GROUP.draw(SCREEN)
-
-    if player.alive:
-        if shoot and not reload:
-            player.shoot()
-        if reload:
-            drawText('RELOADING', 600, 15)
-            player.reload()
-        if player.in_air:
-            player.update_action(2)
-        elif moving_left or moving_right:
-            player.update_action(1)
-        else:
-            player.update_action(0)
-        screen_scroll = player.move(moving_left, moving_right)
-        background_scroll -= screen_scroll
-
-        if player.reload_time == 0:
-            reload = False
-
+    if not start_game:
+        #draw menu
+        SCREEN.fill(BG)
+        
+        #add buttons
+        if start_button.draw(SCREEN):
+            start_game = True
+        if exit_button.draw(SCREEN):
+            start_game = False
+    else:
+        draw_background()
+        
+        world.draw()
+        
+        player.update()
+        player.draw()
+        player.health_bar()
+        player.ammo_count()
+        
+        for enemy in ENEMY_GROUP:
+            enemy.ai()
+            enemy.update()
+            enemy.draw()
+            
+        BULLET_GROUP.update()
+        BULLET_GROUP.draw(SCREEN)
+        
+        OBJECT_GROUP.update()
+        OBJECT_GROUP.draw(SCREEN)
+        
+        DECORATION_GROUP.update()
+        DECORATION_GROUP.draw(SCREEN)
+        
+        WATER_GROUP.update()
+        WATER_GROUP.draw(SCREEN)
+        
+        EXIT_GROUP.update()
+        EXIT_GROUP.draw(SCREEN)
+        
+        if player.alive:
+            if shoot and not reload:
+                player.shoot()
+            if reload:
+                drawText('RELOADING', 600, 15)
+                player.reload()
+            if player.in_air:
+                player.update_action(2)
+            elif moving_left or moving_right:
+                player.update_action(1)
+            else:
+                player.update_action(0)
+                
+            screen_scroll = player.move(moving_left, moving_right)
+            background_scroll -= screen_scroll
+            
+            if player.reload_time == 0:
+                reload = False
+                
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = 0
@@ -492,7 +510,6 @@ while run:
                 shoot = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
-                jump_fx.play()
             if event.key == pygame.K_k and player.reload_time == 0 and player.ammo < 6:
                 reload = True
                 player.reload_time = pygame.time.get_ticks()
@@ -506,5 +523,5 @@ while run:
                 shoot = False
 
     pygame.display.update()
-
+        
 pygame.quit()
