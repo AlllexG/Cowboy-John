@@ -34,6 +34,9 @@ spin_fx.set_volume(0.5)
 bullet_fx = pygame.mixer.Sound('Audio/Bullet.wav')
 bullet_fx.set_volume(0.6)
 
+drowning_fx = pygame.mixer.Sound('Audio/Drowning.wav')
+drowning_fx.set_volume(0.5)
+
 
 images_list = []
 for x in range(TILE_TYPES):
@@ -191,12 +194,15 @@ class Cowboy(pygame.sprite.Sprite):
                     
         #check collision with water
         if pygame.sprite.spritecollide(self, WATER_GROUP, False):
+            drowning_fx.play()
             self.health = 0
             
         #check collision with exit
         level_complete = False
-        if pygame.sprite.spritecollide(self, EXIT_GROUP, False):
+        if pygame.sprite.spritecollide(self, EXIT_GROUP, False) and level != 3:
             level_complete = True
+        else:
+            pass
             
         #check if fallen of the map
         if self.rect.bottom > SCREEN_HEIGHT:
@@ -454,7 +460,7 @@ class Bullet(pygame.sprite.Sprite):
             
         if pygame.sprite.spritecollide(player, BULLET_GROUP, False):
             if player.alive:
-                player.health -= 2
+                player.health -= 3
                 self.kill()
         
         for enemy in ENEMY_GROUP:
