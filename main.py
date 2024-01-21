@@ -491,7 +491,7 @@ while run:
         if start_button.draw(SCREEN):
             start_game = True
         if exit_button.draw(SCREEN):
-            start_game = False
+            run = 0
     else:
         draw_background()
         
