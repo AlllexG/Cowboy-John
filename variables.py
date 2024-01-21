@@ -9,6 +9,8 @@ SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 CLOCK = pygame.time.Clock()
 
+start_game = False
+
 level = 1
 ROWS = 16
 COLS = 50
@@ -24,6 +26,10 @@ background_scroll = 0
 FONT = pygame.font.Font('PixelForce.ttf', 32)
 
 GRAVITY = 0.75
+
+START_BUTTON_IMAGE = pygame.image.load('Images/start_button.png').convert_alpha()
+EXIT_BUTTON_IMAGE = pygame.image.load('Images/exit_button.png').convert_alpha()
+RESTART_BUTTON_IMAGE = pygame.image.load('Images/restart_button.png').convert_alpha()
 
 BULLET_IMAGE = pygame.image.load("Images/Objects/bullet.png").convert_alpha()
 BULLET_COUNT_IMAGE = pygame.image.load("Images/Objects/bullet_count_image.png").convert_alpha()
