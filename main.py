@@ -16,11 +16,11 @@ reload = False
 
 # Load music and sounds
 pygame.mixer.music.load('Audio/Music.mp3')
-pygame.mixer.music.set_volume(0.25)
+pygame.mixer.music.set_volume(0.15)
 pygame.mixer.music.play(-1, 0.0, 0)
 
 jump_fx = pygame.mixer.Sound('Audio/Jump.wav')
-jump_fx.set_volume(0.5)
+jump_fx.set_volume(0.6)
 
 gunshot_fx = pygame.mixer.Sound('Audio/Gunshot.wav')
 gunshot_fx.set_volume(0.5)
@@ -339,6 +339,24 @@ class World:
             SCREEN.blit(tile[0], tile[1])
 
 
+class ScreenFade():
+    def __init__(self, direction, colour, speed):
+        self.direction = direction
+        self.colour = colour
+        self.speed = speed
+        self.fade_counter = 0
+
+    def fade(self):
+        self.fade_counter += self.speed
+        pygame.draw.rect(SCREEN, self.colour, (0, 0, SCREEN_WIDTH, 0 + self.fade_counter))
+
+
+
+# Create screen fades
+death_fade = ScreenFade(2, RED, 4)
+
+
+
 class Decoration(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -550,6 +568,7 @@ while run:
                 shoot = True
             if event.key == pygame.K_SPACE and player.alive:
                 player.jump = True
+                jump_fx.play()
             if event.key == pygame.K_k and player.reload_time == 0 and player.ammo < 6:
                 reload = True
                 player.reload_time = pygame.time.get_ticks()
