@@ -11,7 +11,7 @@ CLOCK = pygame.time.Clock()
 
 start_game = False
 
-level = 2
+level = 1
 ROWS = 16
 COLS = 50
 
