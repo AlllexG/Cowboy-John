@@ -59,6 +59,23 @@ def draw_background():
         SCREEN.blit(SAND_1_IMAGE, ((x * width) - background_scroll * 0.8, SCREEN_HEIGHT - SAND_1_IMAGE.get_height() - 10))
 
 
+#function that resests level
+def reset_level():
+    ENEMY_GROUP.empty()
+    BULLET_GROUP.empty()
+    OBJECT_GROUP.empty()
+    DECORATION_GROUP.empty()
+    WATER_GROUP.empty()
+    EXIT_GROUP.empty()
+    
+    #create empty tile list
+    data = []
+    for row in range(ROWS):
+        current_row = [-1] * COLS
+        data.append(current_row)
+        
+    return data
+
 class Cowboy(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed, ammo, health, shooting_cooldown):
         pygame.sprite.Sprite.__init__(self)
@@ -171,6 +188,14 @@ class Cowboy(pygame.sprite.Sprite):
                     self.vel_y = 0
                     self.in_air = False
                     move_y = tile[1].top - self.rect.bottom
+                    
+        #check collision with water
+        if pygame.sprite.spritecollide(self, WATER_GROUP, False):
+            self.health = 0
+        
+        #check if fallen of the map
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.health = 0
                     
         #check if going off the edges of the screen
         if self.char_type == 'Player':
@@ -434,7 +459,7 @@ class Bullet(pygame.sprite.Sprite):
 
 start_button = Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, START_BUTTON_IMAGE, 1)
 exit_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, EXIT_BUTTON_IMAGE, 1)
-restart_button = Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, RESTART_BUTTON_IMAGE, 1)
+restart_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 50, RESTART_BUTTON_IMAGE, 2)
 
 
 world_data = []
@@ -515,6 +540,21 @@ while run:
             
             if player.reload_time == 0:
                 reload = False
+        else:
+            screen_scroll = 0
+            if restart_button.draw(SCREEN):
+                background_scroll = 0
+                world_data = reset_level()
+                
+                with open(f'level{level}_data.csv', newline='') as csvfile:
+                    reader = csv.reader(csvfile, delimiter=',')
+                    for x, row in enumerate(reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
+                            
+                world = World()
+                player = world.process_data(world_data)
+                
                 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
