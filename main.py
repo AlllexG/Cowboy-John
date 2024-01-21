@@ -121,7 +121,7 @@ class Cowboy(pygame.sprite.Sprite):
             self.direction = 1
 
         if self.jump and not self.in_air:
-            self.vel_y = -11
+            self.vel_y = -15
             self.jump = False
             self.in_air = True
 
@@ -136,10 +136,6 @@ class Cowboy(pygame.sprite.Sprite):
             #check collision in the x direction
             if tile[1].colliderect(self.rect.x + move_x, self.rect.y, self.width, self.height):
                 move_x = 0
-                #if the ai has hit a wall then make it turn round
-                if self.char_type == 'Enemy':
-                    self.direction *= -1
-                    self.move_counter = 0
             #check collision in the y direction
             if tile[1].colliderect(self.rect.x, self.rect.y + move_y, self.width, self.height):
                 #check if below the ground, i.e. jumping
@@ -275,9 +271,9 @@ class World:
                         decoration = Decoration(current_image, x * TILE_SIZE, y * TILE_SIZE)
                         DECORATION_GROUP.add(decoration)
                     elif tile == 15: #create player
-                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1, 8, 6, 10, 25)
+                        player = Cowboy("Player", x * TILE_SIZE, y * TILE_SIZE, 1.5, 8, 6, 10, 25)
                     elif tile == 16: #create enemies
-                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1, 1, 6, 10, 100)
+                        enemy = Cowboy('Enemy', x * TILE_SIZE, y * TILE_SIZE, 1.5, 2, 6, 10, 75)
                         ENEMY_GROUP.add(enemy)
                     elif tile == 17: #create exit
                         exit = Exit(current_image, x * TILE_SIZE, y * TILE_SIZE)
@@ -396,7 +392,7 @@ for row in range(ROWS):
     current_row = [-1] * COLS
     world_data.append(current_row)
 
-with open(f'level_{level}_data.csv', newline='') as csvfile:
+with open(f'level{level}_data.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for x, row in enumerate(reader):
         for y, tile in enumerate(row):

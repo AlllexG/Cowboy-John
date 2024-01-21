@@ -11,13 +11,13 @@ CLOCK = pygame.time.Clock()
 
 level = 1
 ROWS = 16
-COLS = 500
+COLS = 50
 
 FPS = 60
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 TILE_TYPES = 20
 
-SCROLL_THRESH = 200
+SCROLL_THRESH = 360
 screen_scroll = 0
 background_scroll = 0
 
