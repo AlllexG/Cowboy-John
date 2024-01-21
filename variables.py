@@ -46,7 +46,7 @@ SAND_3_IMAGE = pygame.image.load("Images/Background/sand3.png").convert_alpha()
 SKY_IMAGE = pygame.image.load("Images/Background/sky.png").convert_alpha()
 
 BG = (236, 217, 149)
-RED = (255, 0, 0)
+RED = (136, 8, 8)
 
 ANIMATION_COOLDOWN = 150
 
