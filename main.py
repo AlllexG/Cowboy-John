@@ -199,10 +199,9 @@ class Cowboy(pygame.sprite.Sprite):
             
         #check collision with exit
         level_complete = False
-        if pygame.sprite.spritecollide(self, EXIT_GROUP, False) and level != 3:
+        if pygame.sprite.spritecollide(self, EXIT_GROUP, False):
             level_complete = True
-        else:
-            pass
+
             
         #check if fallen of the map
         if self.rect.bottom > SCREEN_HEIGHT:
@@ -581,6 +580,8 @@ while run:
                                 
                     world = World()
                     player = world.process_data(world_data)
+                else:
+                    run = 0
                     
             if player.reload_time == 0:
                 reload = False
